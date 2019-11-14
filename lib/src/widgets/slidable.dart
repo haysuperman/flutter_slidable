@@ -328,54 +328,63 @@ class SlidableData extends InheritedWidget {
 class SlidableController {
   /// Creates a controller that keep tracks of the active [SlidableState] and close
   /// the previous one.
-  SlidableController({
-    this.onSlideAnimationChanged,
-    this.onSlideIsOpenChanged,
-  });
+  // SlidableController({
+  //   this.onSlideAnimationChanged,
+  //   this.onSlideIsOpenChanged,
+  // });
 
-  /// Function called when the animation changed.
-  final ValueChanged<Animation<double>> onSlideAnimationChanged;
-
-  /// Function called when the [Slidable] open status changed.
-  final ValueChanged<bool> onSlideIsOpenChanged;
-
-  bool _isSlideOpen;
-
-  Animation<double> _slideAnimation;
-
-  SlidableState _activeState;
-
-  /// The state of the active [Slidable].
-  SlidableState get activeState => _activeState;
-
-  /// Changes the state of the active [Slidable].
-  set activeState(SlidableState value) {
-    _activeState?._flingAnimationController();
-
-    _activeState = value;
-    if (onSlideAnimationChanged != null) {
-      _slideAnimation?.removeListener(_handleSlideIsOpenChanged);
-      if (onSlideIsOpenChanged != null) {
-        _slideAnimation = value?.overallMoveAnimation;
-        _slideAnimation?.addListener(_handleSlideIsOpenChanged);
-        if (_slideAnimation == null) {
-          _isSlideOpen = false;
-          onSlideIsOpenChanged(_isSlideOpen);
-        }
-      }
-      onSlideAnimationChanged(value?.overallMoveAnimation);
-    }
+  ValueNotifier<bool> openSlide = ValueNotifier(false);
+  void dispose() {
+    openSlide?.dispose();
   }
+  // setOpenSlide(bool isOpenSlide) {
+  //   print('isopen');
+  //   openSlide.value = isOpenSlide;
+  // }
+  
+  // /// Function called when the animation changed.
+  // ValueChanged<Animation<double>> onSlideAnimationChanged;
 
-  void _handleSlideIsOpenChanged() {
-    if (onSlideIsOpenChanged != null && _slideAnimation != null) {
-      final bool isOpen = _slideAnimation.value != 0.0;
-      if (isOpen != _isSlideOpen) {
-        _isSlideOpen = isOpen;
-        onSlideIsOpenChanged(_isSlideOpen);
-      }
-    }
-  }
+  // /// Function called when the [Slidable] open status changed.
+  // ValueChanged<bool> onSlideIsOpenChanged;
+
+  // bool _isSlideOpen;
+
+  // Animation<double> _slideAnimation;
+
+  // SlidableState _activeState;
+
+  // /// The state of the active [Slidable].
+  // SlidableState get activeState => _activeState;
+
+  // /// Changes the state of the active [Slidable].
+  // set activeState(SlidableState value) {
+  //   _activeState?._flingAnimationController();
+
+  //   _activeState = value;
+  //   if (onSlideAnimationChanged != null) {
+  //     _slideAnimation?.removeListener(_handleSlideIsOpenChanged);
+  //     if (onSlideIsOpenChanged != null) {
+  //       _slideAnimation = value?.overallMoveAnimation;
+  //       _slideAnimation?.addListener(_handleSlideIsOpenChanged);
+  //       if (_slideAnimation == null) {
+  //         _isSlideOpen = false;
+  //         onSlideIsOpenChanged(_isSlideOpen);
+  //       }
+  //     }
+  //     onSlideAnimationChanged(value?.overallMoveAnimation);
+  //   }
+  // }
+
+  // void _handleSlideIsOpenChanged() {
+  //   if (onSlideIsOpenChanged != null && _slideAnimation != null) {
+  //     final bool isOpen = _slideAnimation.value != 0.0;
+  //     if (isOpen != _isSlideOpen) {
+  //       _isSlideOpen = isOpen;
+  //       onSlideIsOpenChanged(_isSlideOpen);
+  //     }
+  //   }
+  // }
 }
 
 /// A widget that can be slid in both direction of the specified axis.
@@ -554,6 +563,16 @@ class SlidableState extends State<Slidable>
   @override
   void initState() {
     super.initState();
+
+    widget.controller.openSlide.addListener((){
+      bool _isOpen = widget.controller.openSlide.value;
+      if (_isOpen) {
+        open();
+      }else{
+        close();
+      }
+    });
+
     _overallMoveController =
         AnimationController(duration: widget.movementDuration, vsync: this)
           ..addStatusListener(_handleDismissStatusChanged)
@@ -675,7 +694,8 @@ class SlidableState extends State<Slidable>
     _overallMoveController.dispose();
     _resizeController?.dispose();
     _removeScrollingNotifierListener();
-    widget.controller?._activeState = null;
+    // widget.controller?._activeState = null;
+    widget.controller?.dispose();
     super.dispose();
   }
 
@@ -683,7 +703,7 @@ class SlidableState extends State<Slidable>
   /// By default it's open the [SlideActionType.primary] action pane, but you
   /// can modify this by setting [actionType].
   void open({SlideActionType actionType}) {
-    widget.controller?.activeState = this;
+    // widget.controller?.activeState = this;
 
     if (actionType != null && _actionType != actionType) {
       setState(() {
@@ -702,11 +722,11 @@ class SlidableState extends State<Slidable>
   /// Closes this [Slidable].
   void close() {
     if (!_overallMoveController.isDismissed) {
-      if (widget.controller?.activeState == this) {
-        widget.controller?.activeState = null;
-      } else {
+      // if (widget.controller?.activeState == this) {
+      //   widget.controller?.activeState = null;
+      // } else {
         _flingAnimationController();
-      }
+      // }
     }
   }
 
@@ -744,7 +764,7 @@ class SlidableState extends State<Slidable>
 
   void _handleDragStart(DragStartDetails details) {
     _dragUnderway = true;
-    widget.controller?.activeState = this;
+    // widget.controller?.activeState = this;
     _dragExtent =
         _actionsMoveAnimation.value * _actionsDragAxisExtent * _dragExtent.sign;
     if (_overallMoveController.isAnimating) {
@@ -753,9 +773,9 @@ class SlidableState extends State<Slidable>
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
-    if (widget.controller != null && widget.controller.activeState != this) {
-      return;
-    }
+    // if (widget.controller != null && widget.controller.activeState != this) {
+    //   return;
+    // }
 
     final double delta = details.primaryDelta;
     _dragExtent += delta;
@@ -779,9 +799,9 @@ class SlidableState extends State<Slidable>
   }
 
   void _handleDragEnd(DragEndDetails details) {
-    if (widget.controller != null && widget.controller.activeState != this) {
-      return;
-    }
+    // if (widget.controller != null && widget.controller.activeState != this) {
+    //   return;
+    // }
 
     _dragUnderway = false;
     final double velocity = details.primaryVelocity;
@@ -849,7 +869,7 @@ class SlidableState extends State<Slidable>
   }
 
   void _handleDismiss() {
-    widget.controller?.activeState = null;
+    // widget.controller?.activeState = null;
     final SlidableDismissal dismissal = widget.dismissal;
     if (dismissal.onDismissed != null) {
       assert(actionType != null);

@@ -1,5 +1,11 @@
+
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+
+List<BuildContext> contextList = [];
+bool open = true;
 
 void main() => runApp(MyApp());
 
@@ -29,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   SlidableController slidableController;
   final List<_HomeItem> items = List.generate(
-    20,
+    5,
     (i) => _HomeItem(
       i,
       'Tile n°$i',
@@ -40,10 +46,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @protected
   void initState() {
-    slidableController = SlidableController(
-      onSlideAnimationChanged: handleSlideAnimationChanged,
-      onSlideIsOpenChanged: handleSlideIsOpenChanged,
-    );
+    slidableController = SlidableController();
+    // slidableController.onSlideAnimationChanged = handleSlideAnimationChanged;
+    // slidableController.onSlideIsOpenChanged = handleSlideIsOpenChanged;
+
     super.initState();
   }
 
@@ -79,7 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: _fabColor,
-        onPressed: null,
+        onPressed: (){
+          slidableController.openSlide.value = open;
+          // slidableController.setOpenSlide(open);
+          open = !open;
+        },
         child: _rotationAnimation == null
             ? Icon(Icons.add)
             : RotationTransition(
@@ -112,6 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final _HomeItem item = items[index];
     //final int t = index;
     return Slidable(
+      closeOnScroll: false,
       key: Key(item.title),
       controller: slidableController,
       direction: direction,
@@ -384,11 +395,33 @@ class VerticalListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    // contextList.add(context);
+    // List<BuildContext> needRemove = [];
+    // List<BuildContext> needAdd = [];
+    
+    // for (BuildContext item in contextList) {
+    //   if (item == null) {
+    //     needRemove.add(item);
+    //   }else if(item != context){
+    //     needAdd.add(context);
+    //   }
+    // }
+    // for (var item in needRemove) {
+    //   contextList.remove(item);
+    // }
+    // for (var item in needAdd) {
+    //   contextList.add(item);
+    // }
+    // if (contextList.length == 0){
+    //   contextList.add(context);
+    // }
+
     return GestureDetector(
-      onTap: () =>
-          Slidable.of(context)?.renderingMode == SlidableRenderingMode.none
-              ? Slidable.of(context)?.open()
-              : Slidable.of(context)?.close(),
+      // onTap: () =>
+      //     Slidable.of(context)?.renderingMode == SlidableRenderingMode.none
+      //         ? Slidable.of(context)?.open()
+      //         : Slidable.of(context)?.close(),
       child: Container(
         color: Colors.white,
         child: ListTile(
