@@ -334,9 +334,9 @@ class SlidableController {
   // });
 
   ValueNotifier<bool> openSlide = ValueNotifier(false);
-  void dispose() {
-    openSlide?.dispose();
-  }
+  // void dispose() {
+  //   // openSlide?.dispose();
+  // }
   // setOpenSlide(bool isOpenSlide) {
   //   print('isopen');
   //   openSlide.value = isOpenSlide;
@@ -564,8 +564,17 @@ class SlidableState extends State<Slidable>
   void initState() {
     super.initState();
 
-    widget.controller.openSlide?.addListener((){
-      bool _isOpen = widget.controller.openSlide.value;
+    widget.controller.openSlide?.addListener(_openSlideListener);
+
+    _overallMoveController =
+        AnimationController(duration: widget.movementDuration, vsync: this)
+          ..addStatusListener(_handleDismissStatusChanged)
+          ..addListener(_handleOverallPositionChanged);
+    _initAnimations();
+  }
+
+  void _openSlideListener(){
+    bool _isOpen = widget.controller.openSlide.value;
       if (_isOpen) {
         if (widget.actionDelegate.actionCount > 0) {
           open(actionType:SlideActionType.primary);
@@ -575,13 +584,6 @@ class SlidableState extends State<Slidable>
       }else{
         close();
       }
-    });
-
-    _overallMoveController =
-        AnimationController(duration: widget.movementDuration, vsync: this)
-          ..addStatusListener(_handleDismissStatusChanged)
-          ..addListener(_handleOverallPositionChanged);
-    _initAnimations();
   }
 
   void _initAnimations() {
@@ -693,13 +695,15 @@ class SlidableState extends State<Slidable>
     }
   }
 
+
+
   @override
   void dispose() {
     _overallMoveController.dispose();
     _resizeController?.dispose();
     _removeScrollingNotifierListener();
     // widget.controller?._activeState = null;
-    widget.controller?.dispose();
+    widget.controller?.openSlide?.removeListener(_openSlideListener);
     super.dispose();
   }
 
