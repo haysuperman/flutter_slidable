@@ -564,10 +564,14 @@ class SlidableState extends State<Slidable>
   void initState() {
     super.initState();
 
-    widget.controller.openSlide.addListener((){
+    widget.controller.openSlide?.addListener((){
       bool _isOpen = widget.controller.openSlide.value;
       if (_isOpen) {
-        open();
+        if (widget.actionDelegate.actionCount > 0) {
+          open(actionType:SlideActionType.primary);
+        }else{
+          open(actionType:SlideActionType.secondary);
+        }
       }else{
         close();
       }
